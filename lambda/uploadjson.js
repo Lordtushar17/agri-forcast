@@ -5,12 +5,12 @@ const data = require("./data.json");
 const client = new DynamoDBClient({ region: "ap-south-1" });
 const ddbDocClient = DynamoDBDocumentClient.from(client);
 
-const tableName = "YourDynamoDBTableName";
+const tableName = "agro-forecast";
 
 async function uploadData() {
   for (const item of data) {
     const itemWithPK = {
-      id: Date.now().toString() + Math.random(),
+      fid: Date.now().toString() + Math.random(),
       ...item,
     };
     console.log("Uploading item:", itemWithPK);
