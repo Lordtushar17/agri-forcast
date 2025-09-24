@@ -1,5 +1,5 @@
 // src/components/Dashboard/Dashboard.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import Card from "../Card";
 import InputForm from "../InputForm";
 
@@ -12,6 +12,7 @@ import YieldSection from "./YieldSection";
 // LogsModal still in Dashboard folder if you added it earlier
 import LogsModal from "./LogsModal";
 import EntryCard from "./EntryCard";
+import WeatherData from "../WeatherData";
 
 const initial = {
   tankLevel: 74,
@@ -28,6 +29,7 @@ const initial = {
     humidity: 68,
     windSpeed: 2.1,
     solarRadiation: 450,
+    lastSync: null,
   },
   yieldHistory: [
     { year: 2022, yield: 2200 },
@@ -39,15 +41,25 @@ const initial = {
 const LOGS_API = "https://1ce5t6va9e.execute-api.ap-south-1.amazonaws.com/agridata";
 
 export default function Dashboard() {
+  // debugging log left intentionally if you need it
+  // console.log("DASSSSHOBOARDDDDDD")
   const [data, setData] = useState(initial);
   const [prediction, setPrediction] = useState(null);
   const [lastRefreshed, setLastRefreshed] = useState(new Date());
+
+  // control for WeatherData refetch (increment to trigger)
+  const [weatherFetchCounter, setWeatherFetchCounter] = useState(0);
 
   // Logs / modal state
   const [logsOpen, setLogsOpen] = useState(false);
   const [logs, setLogs] = useState([]); // normalized array of entries
   const [logsLoading, setLogsLoading] = useState(false);
   const [logsError, setLogsError] = useState(null);
+
+  // stable callback so WeatherData effect doesn't re-run every render
+  const handleWeatherUpdate = useCallback((w) => {
+    setData((prev) => ({ ...prev, weather: { ...prev.weather, ...w } }));
+  }, []);
 
   // simulate fetching sensors/new telemetry
   const handleRefresh = () => {
@@ -57,12 +69,8 @@ export default function Dashboard() {
       return { ...z, moisture: newM, status: newM < 40 ? "Dry" : "OK" };
     });
 
-    const newWeather = {
-      ...data.weather,
-      temp: +(data.weather.temp + (Math.random() - 0.5) * 1.5).toFixed(1),
-      humidity: Math.max(20, Math.min(95, Math.round(data.weather.humidity + (Math.random() - 0.5) * 4))),
-      windSpeed: +(data.weather.windSpeed + (Math.random() - 0.5) * 0.6).toFixed(1),
-    };
+    // keep weather values from API (do not randomize)
+    const newWeather = data.weather;
 
     setData((prev) => ({
       ...prev,
@@ -70,6 +78,10 @@ export default function Dashboard() {
       weather: newWeather,
       tankLevel: Math.max(10, Math.min(100, prev.tankLevel + (Math.random() > 0.7 ? -2 : 0))),
     }));
+
+    // trigger WeatherData to fetch once more
+    setWeatherFetchCounter((c) => c + 1);
+
     setLastRefreshed(new Date());
     console.log("Refreshed telemetry (simulated)");
   };
@@ -91,17 +103,16 @@ export default function Dashboard() {
   };
 
   const handleSimulatePrediction = () => {
-  const avgSoil = data.zones.reduce((s, z) => s + z.moisture, 0) / data.zones.length;
-  const predicted = Math.max(50, Math.round((data.weather.temp || 20) * 4 + (60 - avgSoil) * 7));
-  setPrediction(predicted);
+    const avgSoil = data.zones.reduce((s, z) => s + z.moisture, 0) / data.zones.length;
+    const predicted = Math.max(50, Math.round((data.weather.temp || 20) * 4 + (60 - avgSoil) * 7));
+    setPrediction(predicted);
 
-  // SMOOTH SCROLL to the farmer input form
-  setTimeout(() => {
-    const el = document.querySelector("#farmer-input-form");
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, 80);
-};
-
+    // SMOOTH SCROLL to the farmer input form
+    setTimeout(() => {
+      const el = document.querySelector("#farmer-input-form");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 80);
+  };
 
   // === Logs fetcher & helpers (unchanged) ===
   const normalizePayloadToEntries = (payload) => {
@@ -188,6 +199,14 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* WeatherData fetcher (silent) — fetches on mount and again when refreshCounter changes */}
+        <div className="mb-4">
+          <WeatherData
+            refreshCounter={weatherFetchCounter}
+            onUpdate={handleWeatherUpdate}
+          />
+        </div>
+
         <div className="flex items-center gap-3">
           <button
             onClick={handleRefresh}
@@ -204,8 +223,6 @@ export default function Dashboard() {
           >
             {logsLoading ? "Loading…" : "Logs"}
           </button>
-
-           
         </div>
       </header>
 
@@ -233,22 +250,7 @@ export default function Dashboard() {
         <InputForm onSubmit={handleFormSubmit} />
       </div>
 
-      {/* Prediction result placeholder under the form (unchanged UI) */}
-      <div id="prediction-result" className="mt-6 max-w-3xl mx-auto">
-        <Card>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div>
-              <div className="text-sm font-medium text-black">Prediction Result</div>
-              <div className="muted">ML response will appear here after integration</div>
-            </div>
-
-            <div className="text-2xl font-bold text-black">
-              {prediction === null ? "—" : `${prediction} L/day`}
-            </div>
-          </div>
-        </Card>
-      </div>
-
+     
       {/* Logs Modal (keeps same props) */}
       <LogsModal
         open={logsOpen}

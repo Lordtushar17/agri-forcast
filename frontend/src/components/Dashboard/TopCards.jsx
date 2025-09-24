@@ -1,4 +1,3 @@
-// src/components/Dashboard/TopCards.jsx
 import React from "react";
 import WeatherCard from "../WeatherCard";
 import PredictionCard from "../PredictionCard";
