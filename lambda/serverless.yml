@@ -1,0 +1,11 @@
+service: agro-smart
+
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: ap-south-1
+
+
+functions:
+  getData:
+    handler: getAllData.getData

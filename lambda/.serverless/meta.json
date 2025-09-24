@@ -1,0 +1,64 @@
+{
+  "/home/bey_ubuntu/code_playground/projects/vortexa2/lambda/serverless.yml": {
+    "versionFramework": "4.19.1",
+    "servicePath": "/home/bey_ubuntu/code_playground/projects/vortexa2/lambda/serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "agro-smart",
+      "provider": {
+        "name": "aws",
+        "runtime": "nodejs22.x",
+        "region": "ap-south-1",
+        "stage": "dev",
+        "versionFunctions": true,
+        "environment": {
+          "IS_LOCAL": "true"
+        }
+      },
+      "functions": {
+        "getData": {
+          "handler": "getAllData.getData",
+          "events": [],
+          "name": "agro-smart-dev-getData"
+        }
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs22.x",
+      "region": "ap-south-1",
+      "stage": "dev",
+      "versionFunctions": true,
+      "environment": {
+        "IS_LOCAL": "true"
+      }
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "serviceRawFile": "service: agro-smart\n\nprovider:\n  name: aws\n  runtime: nodejs22.x\n  region: ap-south-1\n\n\nfunctions:\n  getData:\n    handler: getAllData.getData\n",
+    "command": [
+      "invoke",
+      "local"
+    ],
+    "options": {
+      "function": "getData"
+    },
+    "orgId": "3bdd868e-47f9-4925-b3e0-79e9372ef0fc",
+    "orgName": "febarch",
+    "userId": "mt8B5v6QRyc0r06wdY",
+    "userName": "febarch",
+    "serviceProviderAwsAccountId": "527265321406",
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}
