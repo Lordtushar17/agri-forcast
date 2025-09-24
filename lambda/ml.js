@@ -39,7 +39,8 @@ export async function postAgriData(event) {
         evapotranspiration, crop_coefficient,
         nitrogen, phosphorus,
         solar_radiation, potassium, 
-        ph, wind_speed
+        ph, wind_speed,
+        timestamp: Date.now()
       },
     });
 
@@ -50,8 +51,7 @@ export async function postAgriData(event) {
     return createResponse(
       200,
       { 
-        success: "User logged in successfully",
-        jwtToken 
+        success: "Agri data inserted successfully",
       }
     );
 
@@ -60,7 +60,7 @@ export async function postAgriData(event) {
       return createResponse(409, { error: "User already exists!" });
     else
       return createResponse(500, {
-        error: `Internal Server Error! ${err.message}`
+        error: `Internal Server Error! ${err}`
       });
   }
 }
