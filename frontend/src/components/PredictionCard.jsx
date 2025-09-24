@@ -8,10 +8,7 @@ export default function PredictionCard({ prediction, onSimulate }) {
       <div className="text-sm font-medium text-black">Water Required (predicted)</div>
 
       <div className="mt-3 flex items-baseline gap-2">
-        <div className="text-3xl font-extrabold text-black">
-          {prediction === null ? "—" : `${prediction} L/day`}
-        </div>
-        <div className="muted">Predicted by ML model</div>
+        <div className="muted">To predict the value click on simulate</div>
       </div>
 
       <div className="mt-4 flex items-center gap-3">
