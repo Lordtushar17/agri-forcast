@@ -3,43 +3,43 @@ import React, { useState } from "react";
 import Card from "./Card";
 
 const numericFields = new Set([
-  "temperature",
-  "humidity",
-  "soilMoisture",
-  "referenceET",
+  "temperature_c_",
+  "humidity_",
+  "soil_moisture",
+  "reference_evapotranspiration",
   "evapotranspiration",
-  "cropCoefficient",
-  "nitrogen",
-  "phosphorus",
+  "crop_coefficient",
+  "nitrogen_mg_kg_",
+  "phosphorus_mg_kg_",
   "potassium",
-  "solarRadiation",
-  "windSpeed",
+  "solar_radiation_ghi",
+  "wind_speed",
   "ph",
 ]);
 
-export default function InputForm({ onSubmit }) {
+export default function InputForm() {
   const [formData, setFormData] = useState({
-    temperature: "",
-    humidity: "",
-    soilMoisture: "",
-    referenceET: "",
+    temperature_c_: "",
+    humidity_: "",
+    soil_moisture: "",
+    reference_evapotranspiration: "",
     evapotranspiration: "",
-    cropCoefficient: "",
-    nitrogen: "",
-    phosphorus: "",
+    crop_coefficient: "",
+    nitrogen_mg_kg_: "",
+    phosphorus_mg_kg_: "",
     potassium: "",
-    solarRadiation: "",
-    windSpeed: "",
+    solar_radiation_ghi: "",
+    wind_speed: "",
     ph: "",
   });
 
   const [errors, setErrors] = useState({});
+  const [prediction, setPrediction] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // allow empty or numeric input for numeric fields
     if (numericFields.has(name)) {
-      // allow numeric characters, dot and leading minus (rare for temp)
       if (value === "" || /^-?\d*\.?\d*$/.test(value)) {
         setFormData((p) => ({ ...p, [name]: value }));
         setErrors((p) => ({ ...p, [name]: "" }));
@@ -60,35 +60,85 @@ export default function InputForm({ onSubmit }) {
     return Object.keys(next).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
-    // convert numeric fields to numbers
-    const payload = { ...formData };
-    numericFields.forEach((k) => (payload[k] = Number(payload[k])));
-    console.log("Farmer Input Data -> will send to ML later:", payload);
-    if (onSubmit) onSubmit(payload);
+
+    setLoading(true);
+    setPrediction(null);
+
+    // Convert numeric strings to numbers for submission
+    const payload = {};
+    Object.entries(formData).forEach(([key, val]) => {
+      payload[key] = val === "" ? null : Number(val);
+    });
+
+    try {
+      const res = await fetch(
+        "https://1ce5t6va9e.execute-api.ap-south-1.amazonaws.com/agridata",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setPrediction(data.predicted_water_required_mm_day);
+      } else {
+        alert("Error: " + (data.error || "Something went wrong"));
+      }
+    } catch (err) {
+      alert("Network error: " + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReset = () => {
+    setFormData({
+      temperature_c_: "",
+      humidity_: "",
+      soil_moisture: "",
+      reference_evapotranspiration: "",
+      evapotranspiration: "",
+      crop_coefficient: "",
+      nitrogen_mg_kg_: "",
+      phosphorus_mg_kg_: "",
+      potassium: "",
+      solar_radiation_ghi: "",
+      wind_speed: "",
+      ph: "",
+    });
+    setErrors({});
+    setPrediction(null);
   };
 
   const fields = [
-    ["temperature", "Temperature (°C)"],
-    ["humidity", "Humidity (%)"],
-    ["soilMoisture", "Soil moisture (raw)"],
-    ["referenceET", "Reference evapotranspiration"],
+    ["temperature_c_", "Temperature (°C)"],
+    ["humidity_", "Humidity (%)"],
+    ["soil_moisture", "Soil moisture (raw)"],
+    ["reference_evapotranspiration", "Reference evapotranspiration"],
     ["evapotranspiration", "Evapotranspiration"],
-    ["cropCoefficient", "Crop coefficient (Kc)"],
-    ["nitrogen", "Nitrogen (N)"],
-    ["phosphorus", "Phosphorus (P)"],
+    ["crop_coefficient", "Crop coefficient (Kc)"],
+    ["nitrogen_mg_kg_", "Nitrogen (N)"],
+    ["phosphorus_mg_kg_", "Phosphorus (P)"],
     ["potassium", "Potassium (K)"],
-    ["solarRadiation", "Solar radiation (W/m²)"],
-    ["windSpeed", "Wind speed (m/s)"],
+    ["solar_radiation_ghi", "Solar radiation (W/m²)"],
+    ["wind_speed", "Wind speed (m/s)"],
     ["ph", "pH"],
   ];
 
   return (
     <Card className="max-w-4xl mx-auto mt-8">
       <h2 className="text-xl font-bold text-black mb-2">Farmer Input Form</h2>
-      <p className="muted mb-4">Fill the values below and press Submit to send to your ML endpoint.</p>
+      <p className="muted mb-4">
+        Fill the values below and press Submit to send to your ML endpoint.
+      </p>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {fields.map(([name, label]) => (
@@ -106,43 +156,38 @@ export default function InputForm({ onSubmit }) {
               }`}
               placeholder={label}
               inputMode={numericFields.has(name) ? "decimal" : "text"}
+              autoComplete="off"
             />
-            {errors[name] && <div className="text-xs text-red-600 mt-1">{errors[name]}</div>}
+            {errors[name] && (
+              <div className="text-xs text-red-600 mt-1">{errors[name]}</div>
+            )}
           </div>
         ))}
 
         <div className="sm:col-span-2 flex flex-col sm:flex-row items-center justify-end gap-3 mt-2">
           <button
             type="button"
-            onClick={() => {
-              setFormData({
-                temperature: "",
-                humidity: "",
-                soilMoisture: "",
-                referenceET: "",
-                evapotranspiration: "",
-                cropCoefficient: "",
-                nitrogen: "",
-                phosphorus: "",
-                solarRadiation: "",
-                windSpeed: "",
-                ph: "",
-              });
-              setErrors({});
-            }}
-            className="px-4 py-2 bg-white text-black border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition"
+            onClick={handleReset}
+            className="px-4 py-2 bg-white text-black border border-gray-200 rounded-lg shadow-sm"
           >
             Reset
           </button>
 
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
+            disabled={loading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg shadow cursor-pointer"
           >
-            Submit
+            {loading ? "Submitting..." : "Submit"}
           </button>
         </div>
       </form>
+
+      {prediction !== null && (
+        <div className="mt-6 p-4 bg-green-100 border border-green-400 rounded-md text-green-800 font-semibold">
+          Predicted Water Required (mm/day): {prediction}
+        </div>
+      )}
     </Card>
   );
 }

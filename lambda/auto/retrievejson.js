@@ -20,7 +20,6 @@ async function scanAllItems() {
       if (response.Items) {
         items = items.concat(response.Items);
       }
-      console
 
       lastEvaluatedKey = response.LastEvaluatedKey;
     } while (lastEvaluatedKey);
