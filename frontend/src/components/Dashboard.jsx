@@ -121,12 +121,6 @@ export default function Dashboard() {
             Refresh
           </button>
 
-          <button
-            onClick={handleSettings}
-            className="px-3 py-1 rounded-md text-black bg-white border border-gray-200 shadow-sm hover:shadow-md transition"
-          >
-            Settings
-          </button>
         </div>
       </header>
 

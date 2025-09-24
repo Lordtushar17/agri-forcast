@@ -22,12 +22,6 @@ export default function PredictionCard({ prediction, onSimulate }) {
           Simulate Prediction
         </button>
 
-        <button
-          onClick={() => console.log("View prediction details (future)") }
-          className="px-3 py-1 bg-white text-black border border-gray-200 rounded-md shadow-sm hover:shadow-md transition"
-        >
-          Details
-        </button>
       </div>
 
       <div className="mt-3 text-sm muted">
