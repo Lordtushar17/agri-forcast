@@ -105,7 +105,7 @@ export default function Dashboard() {
       <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-extrabold text-black">
-            Agri Forecast — Crop & Irrigation Predictor
+            Agri Forecast — Crop & Irrigation Predictor with AI
           </h1>
           <p className="muted mt-1 max-w-xl">
             Data-driven platform combining weather + yield history to predict crop cycles and irrigation schedules.
